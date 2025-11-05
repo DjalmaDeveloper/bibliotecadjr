@@ -1,0 +1,32 @@
+name: Deploy to CloudFlare Pages
+on:
+  push:
+    branches: ["develop"]
+  pull_request:
+    branches: ["main"]
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "9.0.x"
+      - name: Clean solution
+        run: dotnet clean
+      - name: Restore dependencies
+        run: dotnet restore BlazorFreeLaS2k25/BlazorFreeLaS2k25.csproj
+      - name: Publish Blazor WebAssembly
+        run: dotnet publish BlazorFreeLaS2k25/BlazorFreeLaS2k25.csproj -c Release -o publish
+      # Passo adicionado para criar o arquivo 404.html
+      - name: Create 404.html
+        run: |
+          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;URL=/"></head><body><h1>Redirecionando...</h1></body></html>' > publish/wwwroot/404.html
+      - name: Deploy to CloudFlare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: pages deploy publish/wwwroot --project-name=freela-s2k25
