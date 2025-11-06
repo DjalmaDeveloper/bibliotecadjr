@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/emprestimos")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://bibliotecadjr.pages.dev/", "http://localhost:3000"})
 public class EmprestimoController {
 
     @Autowired
