@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/autores")
-@CrossOrigin(origins = "*") // Permite acesso do frontend
+@CrossOrigin(origins = {"https://bibliotecadjr.pages.dev/", "http://localhost:3000"}) // Permite acesso do frontend
 public class AutorController {
 
     @Autowired
