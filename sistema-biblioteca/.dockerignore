@@ -1,0 +1,38 @@
+# Maven
+target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+logs/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Documentação
+README.md
+docs/
+
+# Testes
+src/test/
+
+# Temporários
+*.tmp
+*.swp
+*.bak
