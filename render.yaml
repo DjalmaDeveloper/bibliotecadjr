@@ -1,29 +1,62 @@
+# ================================
+# Render.com Configuration
+# Sistema Biblioteca API
+# ================================
+
 services:
+  # Web Service (API)
   - type: web
     name: sistema-biblioteca-api
-    env: docker
-    dockerfilePath: ./Dockerfile
-    dockerContext: ./
-    region: oregon
-    plan: free
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    region: oregon # ou sua região preferida: oregon, frankfurt, singapore
+    plan: free # ou starter, standard, pro
+    
+    # Branch configuration
     branch: main
-    healthCheckPath: /api/autores
+    
+    # Build configuration
+    buildFilter:
+      paths:
+        - src/**
+        - pom.xml
+        - Dockerfile.render
+    
+    # Environment variables
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: PORT
-        value: 8080
+      
       - key: JAVA_OPTS
-        value: "-Xms256m -Xmx512m"
-      # Opcao: remova DATABASE_URL e use valores fixos no application-prod.properties
-      # OU configure as variaveis DB_* abaixo:
-      - key: DB_HOST
-        value: dpg-d46ldseuk2gs7388mc3g-a.oregon-postgres.render.com
-      - key: DB_PORT
-        value: 5432
-      - key: DB_NAME
-        value: biblioteca_oy3m
-      - key: DB_USER
+        value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+      
+      # Database Configuration - Render PostgreSQL (External Host)
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://dpg-d46ldseuk2gs7388mc3g-a.oregon-postgres.render.com:5432/biblioteca_oy3m
+      
+      - key: SPRING_DATASOURCE_USERNAME
         value: biblioteca_user
-      - key: DB_PASSWORD
-        sync: false  # Marque como sensivel para nao aparecer nos logs
+      
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: KLTdKEOCth4ZZxZXJS0NwW9UUBQkfWf1
+      
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      
+      - key: SPRING_JPA_SHOW_SQL
+        value: "false"
+      
+      # Server configuration
+      - key: SERVER_PORT
+        value: "8080"
+    
+    # Health check
+    healthCheckPath: /api/autores
+    
+    # Auto-deploy
+    autoDeploy: true
+
+# Database (Already created in Render)
+# Using existing database: dpg-d46ldseuk2gs7388mc3g-a
+# Database: biblioteca_oy3m
+# Username: biblioteca_user

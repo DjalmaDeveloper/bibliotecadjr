@@ -1,0 +1,83 @@
+# ================================
+# Dockerfile Otimizado para Render
+# Sistema Biblioteca - Spring Boot Application
+# ================================
+
+# ================================
+# Stage 1: Build
+# ================================
+FROM maven:3.9.5-eclipse-temurin-17 AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Set Maven options for better network resilience
+ENV MAVEN_OPTS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.httpconnectionManager.ttlSeconds=120"
+
+# Copy Maven configuration
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+
+# Make mvnw executable
+RUN chmod +x mvnw
+
+# Download dependencies with increased timeout and retries
+# Split into multiple steps for better reliability
+RUN ./mvnw dependency:resolve -B -U || \
+    (echo "Retrying dependency download..." && sleep 15 && ./mvnw dependency:resolve -B -U) || \
+    (echo "Final retry..." && sleep 30 && ./mvnw dependency:resolve -B -U)
+
+RUN ./mvnw dependency:resolve-plugins -B || true
+
+# Copy source code
+COPY src ./src
+
+# Build application
+# Using mvnw instead of mvn for consistency
+RUN ./mvnw clean package -DskipTests -B -U || \
+    (echo "Retrying build..." && sleep 10 && ./mvnw clean package -DskipTests -B)
+
+# Verify JAR was created
+RUN ls -la target/ && \
+    test -f target/*.jar && \
+    echo "JAR file created successfully"
+
+# ================================
+# Stage 2: Runtime
+# ================================
+FROM eclipse-temurin:17-jre-alpine
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Create non-root user for security
+RUN addgroup -g 1001 spring && \
+    adduser -u 1001 -G spring -s /bin/sh -D spring
+
+# Set working directory
+WORKDIR /app
+
+# Copy jar from builder stage
+COPY --from=builder --chown=spring:spring /app/target/*.jar app.jar
+
+# Switch to non-root user
+USER spring:spring
+
+# Expose application port
+EXPOSE 8080
+
+# Set JVM options for container environment
+ENV JAVA_OPTS="-XX:+UseContainerSupport \
+    -XX:MaxRAMPercentage=75.0 \
+    -XX:InitialRAMPercentage=50.0 \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Djava.net.preferIPv4Stack=true"
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Run the application
+# Note: PORT environment variable is set by Render
+CMD sh -c "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -Dspring.profiles.active=prod -jar app.jar"
+
