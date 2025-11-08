@@ -13,7 +13,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -31,7 +33,7 @@ public class AutorController {
     )
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
+            responseCode = "201",
             description = "Autor criado com sucesso",
             content = @Content(schema = @Schema(implementation = Autor.class))
         ),
@@ -45,7 +47,15 @@ public class AutorController {
             @Parameter(description = "Dados do autor a ser criado", required = true)
             @Valid @RequestBody Autor autor) {
         Autor novoAutor = autorRepository.save(autor);
-        return ResponseEntity.ok(novoAutor);
+        
+        // Criar URI do recurso criado
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(novoAutor.getId())
+                .toUri();
+        
+        return ResponseEntity.created(location).body(novoAutor);
     }
 
     @Operation(
@@ -131,7 +141,7 @@ public class AutorController {
     )
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
+            responseCode = "204",
             description = "Autor deletado com sucesso"
         ),
         @ApiResponse(
@@ -145,7 +155,7 @@ public class AutorController {
             @PathVariable Long id) {
         if (autorRepository.existsById(id)) {
             autorRepository.deleteById(id);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }

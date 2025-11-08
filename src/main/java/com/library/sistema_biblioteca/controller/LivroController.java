@@ -2,43 +2,127 @@ package com.library.sistema_biblioteca.controller;
 
 import com.library.sistema_biblioteca.model.Livro;
 import com.library.sistema_biblioteca.repository.LivroRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/livros")
 @CrossOrigin(origins = {"https://bibliotecadjr.pages.dev/", "http://localhost:3000"})
+@Tag(name = "Livros", description = "API para gerenciamento de livros")
 public class LivroController {
 
     @Autowired
     private LivroRepository livroRepository;
 
+    @Operation(
+        summary = "Criar novo livro",
+        description = "Cria um novo livro no sistema com as informações fornecidas"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Livro criado com sucesso",
+            content = @Content(schema = @Schema(implementation = Livro.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Dados inválidos fornecidos"
+        )
+    })
     @PostMapping
-    public ResponseEntity<Livro> criar(@Valid @RequestBody Livro livro) {
+    public ResponseEntity<Livro> criar(
+            @Parameter(description = "Dados do livro a ser criado", required = true)
+            @Valid @RequestBody Livro livro) {
         Livro novoLivro = livroRepository.save(livro);
-        return ResponseEntity.ok(novoLivro);
+        
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(novoLivro.getId())
+                .toUri();
+        
+        return ResponseEntity.created(location).body(novoLivro);
     }
 
+    @Operation(
+        summary = "Listar todos os livros",
+        description = "Retorna uma lista com todos os livros cadastrados no sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de livros retornada com sucesso",
+            content = @Content(schema = @Schema(implementation = Livro.class))
+        )
+    })
     @GetMapping
     public ResponseEntity<List<Livro>> listarTodos() {
         List<Livro> livros = livroRepository.findAll();
         return ResponseEntity.ok(livros);
     }
 
+    @Operation(
+        summary = "Buscar livro por ID",
+        description = "Retorna um livro específico pelo seu ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Livro encontrado",
+            content = @Content(schema = @Schema(implementation = Livro.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Livro não encontrado"
+        )
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Livro> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Livro> buscarPorId(
+            @Parameter(description = "ID do livro", required = true, example = "1")
+            @PathVariable Long id) {
         return livroRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(
+        summary = "Atualizar livro",
+        description = "Atualiza as informações de um livro existente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Livro atualizado com sucesso",
+            content = @Content(schema = @Schema(implementation = Livro.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Livro não encontrado"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Dados inválidos fornecidos"
+        )
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<Livro> atualizar(@PathVariable Long id,
-                                           @Valid @RequestBody Livro livroAtualizado) {
+    public ResponseEntity<Livro> atualizar(
+            @Parameter(description = "ID do livro", required = true, example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "Dados atualizados do livro", required = true)
+            @Valid @RequestBody Livro livroAtualizado) {
         return livroRepository.findById(id)
                 .map(livro -> {
                     livro.setTitulo(livroAtualizado.getTitulo());
@@ -53,11 +137,27 @@ public class LivroController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(
+        summary = "Deletar livro",
+        description = "Remove um livro do sistema pelo seu ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Livro deletado com sucesso"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Livro não encontrado"
+        )
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(
+            @Parameter(description = "ID do livro", required = true, example = "1")
+            @PathVariable Long id) {
         if (livroRepository.existsById(id)) {
             livroRepository.deleteById(id);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
