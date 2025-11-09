@@ -92,11 +92,16 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
-        // Permitir credenciais (cookies, headers de autenticação)
-        config.setAllowCredentials(true);
+        // Permitir credenciais apenas para origens específicas (não file://)
+        // file:// não suporta credentials
+        config.setAllowCredentials(false);
         
         // Configurar origens permitidas
         config.setAllowedOrigins(ALLOWED_ORIGINS);
+        
+        // Permitir qualquer origem para desenvolvimento (file://)
+        // Comentar em produção por segurança
+        config.addAllowedOriginPattern("*");
         
         // Configurar métodos HTTP permitidos
         config.setAllowedMethods(ALLOWED_METHODS);
