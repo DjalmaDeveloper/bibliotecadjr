@@ -32,10 +32,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 // CORS será gerenciado pelo CorsConfig
-                .cors(cors -> cors.configure(http))
+                .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints publicos
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/error").permitAll()
                         // Todos os outros requerem autenticacao
                         .anyRequest().authenticated()
@@ -51,9 +52,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(passwordEncoder());
         authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
 

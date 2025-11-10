@@ -23,7 +23,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         // Verificar se username já existe
-        if (usuarioRepository.existsByUsername(request.getUsername())) {
+        if (usuarioRepository.existsByUserName(request.getUsername())) {
             throw new RuntimeException("Username ja existe!");
         }
 
@@ -66,7 +66,7 @@ public class AuthService {
         );
 
         // Buscar usuário
-        Usuario usuario = usuarioRepository.findByUsername(request.getUsername())
+        Usuario usuario = usuarioRepository.findByUserName(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
 
         // Gerar token
