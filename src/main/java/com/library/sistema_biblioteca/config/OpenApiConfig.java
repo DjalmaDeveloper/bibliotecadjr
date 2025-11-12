@@ -1,9 +1,11 @@
 package com.library.sistema_biblioteca.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,7 +42,15 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(apiInfo())
-                .servers(apiServers());
+                .servers(apiServers())
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .description("Insira o token JWT obtido no endpoint /api/auth/login")
+                        )
+                );
     }
 
     /**
@@ -57,6 +67,16 @@ public class OpenApiConfig {
                         
                         ## Recursos Disponíveis
                         
+                        ### 🔐 Autenticação
+                        - Registro de novos usuários
+                        - Login e autenticação JWT
+                        - Controle de acesso baseado em perfis (USER/ADMIN)
+                        
+                        ### 👥 Usuários
+                        - Gerenciamento de usuários
+                        - Controle de perfis e permissões
+                        - Ativação/desativação de contas
+                        
                         ### 📚 Livros
                         - Cadastro, consulta, atualização e exclusão de livros
                         - Busca por título, autor e ISBN
@@ -72,22 +92,43 @@ public class OpenApiConfig {
                         - Gestão de devoluções
                         - Histórico de empréstimos
                         
+                        ## Autenticação
+                        
+                        Esta API usa autenticação JWT (JSON Web Token). Para acessar endpoints protegidos:
+                        
+                        1. **Registre-se** usando `/api/auth/register` ou faça **login** com `/api/auth/login`
+                        2. Copie o **token** recebido na resposta
+                        3. Clique no botão **"Authorize" 🔓** no topo desta página
+                        4. Cole o token no campo que aparecerá (sem adicionar "Bearer")
+                        5. Agora você pode testar os endpoints protegidos!
+                        
+                        ### Perfis de Acesso
+                        - **USER**: Acesso básico (consultas e empréstimos)
+                        - **ADMIN**: Acesso total (gerenciamento completo do sistema)
+                        
                         ## Tecnologias
                         - Spring Boot 3.5.7
+                        - Spring Security + JWT
                         - Java 17
                         - PostgreSQL
                         - SpringDoc OpenAPI 3.0
                         
                         ## Como Usar
-                        1. Explore os endpoints disponíveis abaixo
-                        2. Clique em "Try it out" para testar
-                        3. Preencha os parâmetros necessários
-                        4. Clique em "Execute"
+                        1. Registre-se ou faça login
+                        2. Copie o token JWT
+                        3. Clique em "Authorize" e cole o token
+                        4. Explore os endpoints disponíveis
+                        5. Clique em "Try it out" para testar
+                        6. Preencha os parâmetros necessários
+                        7. Clique em "Execute"
                         
                         ## Códigos de Status
                         - `200`: Sucesso
                         - `201`: Criado
+                        - `204`: Sucesso (sem conteúdo)
                         - `400`: Requisição inválida
+                        - `401`: Não autenticado
+                        - `403`: Sem permissão
                         - `404`: Recurso não encontrado
                         - `500`: Erro interno do servidor
                         """)
