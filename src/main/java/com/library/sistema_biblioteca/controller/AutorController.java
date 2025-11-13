@@ -22,7 +22,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/autores")
 @Tag(name = "Autores", description = "API para gerenciamento de autores")
-@PreAuthorize("hasRole('ADMIN')")
 public class AutorController {
 
     @Autowired
@@ -44,7 +43,7 @@ public class AutorController {
         )
     })
     @PostMapping
-    @PreAuthorize("hasRole('BIBLIOTECARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BIBLIOTECARIO')")
     public ResponseEntity<Autor> criar(
             @Parameter(description = "Dados do autor a ser criado", required = true)
             @Valid @RequestBody Autor autor) {
@@ -72,7 +71,7 @@ public class AutorController {
         )
     })
     @GetMapping
-    @PreAuthorize("hasRole('BIBLIOTECARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BIBLIOTECARIO')")
     public ResponseEntity<List<Autor>> listarTodos() {
         List<Autor> autores = autorRepository.findAll();
         return ResponseEntity.ok(autores);
@@ -94,7 +93,7 @@ public class AutorController {
         )
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('BIBLIOTECARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BIBLIOTECARIO')")
     public ResponseEntity<Autor> buscarPorId(
             @Parameter(description = "ID do autor", required = true, example = "1")
             @PathVariable Long id) {
@@ -123,7 +122,7 @@ public class AutorController {
         )
     })
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('BIBLIOTECARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BIBLIOTECARIO')")
     public ResponseEntity<Autor> atualizar(
             @Parameter(description = "ID do autor", required = true, example = "1")
             @PathVariable Long id,
@@ -155,6 +154,7 @@ public class AutorController {
         )
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> deletar(
             @Parameter(description = "ID do autor", required = true, example = "1")
             @PathVariable Long id) {
