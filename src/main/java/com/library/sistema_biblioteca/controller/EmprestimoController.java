@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/emprestimos")
 @Tag(name = "Empréstimos", description = "API para gerenciamento de empréstimos")
+@PreAuthorize("hasRole('ADMIN')")
 public class EmprestimoController {
 
     @Autowired
@@ -42,6 +44,7 @@ public class EmprestimoController {
         )
     })
     @PostMapping
+    @PreAuthorize("hasRole('BIBLIOTECARIO')")
     public ResponseEntity<Emprestimo> criar(
             @Parameter(description = "Dados do empréstimo a ser criado", required = true)
             @Valid @RequestBody Emprestimo emprestimo) {
@@ -68,6 +71,7 @@ public class EmprestimoController {
         )
     })
     @GetMapping
+    @PreAuthorize("hasRole('BIBLIOTECARIO')")
     public ResponseEntity<List<Emprestimo>> listarTodos() {
         List<Emprestimo> emprestimos = emprestimoRepository.findAll();
         return ResponseEntity.ok(emprestimos);
@@ -89,6 +93,7 @@ public class EmprestimoController {
         )
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('BIBLIOTECARIO')")
     public ResponseEntity<Emprestimo> buscarPorId(
             @Parameter(description = "ID do empréstimo", required = true, example = "1")
             @PathVariable Long id) {
@@ -117,6 +122,7 @@ public class EmprestimoController {
         )
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('BIBLIOTECARIO')")
     public ResponseEntity<Emprestimo> atualizar(
             @Parameter(description = "ID do empréstimo", required = true, example = "1")
             @PathVariable Long id,

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/autores")
 @Tag(name = "Autores", description = "API para gerenciamento de autores")
+@PreAuthorize("hasRole('ADMIN')")
 public class AutorController {
 
     @Autowired
@@ -42,6 +44,7 @@ public class AutorController {
         )
     })
     @PostMapping
+    @PreAuthorize("hasRole('BIBLIOTECARIO')")
     public ResponseEntity<Autor> criar(
             @Parameter(description = "Dados do autor a ser criado", required = true)
             @Valid @RequestBody Autor autor) {
@@ -69,6 +72,7 @@ public class AutorController {
         )
     })
     @GetMapping
+    @PreAuthorize("hasRole('BIBLIOTECARIO')")
     public ResponseEntity<List<Autor>> listarTodos() {
         List<Autor> autores = autorRepository.findAll();
         return ResponseEntity.ok(autores);
@@ -90,6 +94,7 @@ public class AutorController {
         )
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('BIBLIOTECARIO')")
     public ResponseEntity<Autor> buscarPorId(
             @Parameter(description = "ID do autor", required = true, example = "1")
             @PathVariable Long id) {
@@ -118,6 +123,7 @@ public class AutorController {
         )
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('BIBLIOTECARIO')")
     public ResponseEntity<Autor> atualizar(
             @Parameter(description = "ID do autor", required = true, example = "1")
             @PathVariable Long id,
